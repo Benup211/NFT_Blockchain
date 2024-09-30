@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
+import {UserRoutes,PropertyHistoryRoutes,PropertyRoutes} from "./routes";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -21,14 +22,18 @@ export class MainServer {
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(cookieParser());
         this.app.use(bodyParser.json());
-        // this.app.use(cors());
+        this.app.use(cors(
+            {
+                origin: process.env.FRONT_END_URL,
+                credentials: true,
+            }
+        ));
     }
 
     setRoutes() {
-        // this.app.use("/api/auth", AuthRoute);
-        this.app.get("/", (req: Request, res: Response) => {
-            res.send("Hello World");
-        });
+        this.app.use("/api/user", UserRoutes);
+        this.app.use("/api/property", PropertyRoutes);
+        this.app.use("/api/property-history", PropertyHistoryRoutes);
     }
 
     handle404Error() {
