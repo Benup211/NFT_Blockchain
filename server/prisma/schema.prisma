@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  uuid                String     @id @default(uuid())
+  email               String     @unique
+  name                String
+  password            String
+  blockchainPublicKey String
+  properties          Property[] @relation("UserProperties")
+}
+
+model Property {
+  uuid                 String                       @id @default(uuid())
+  address              String
+  price                Float
+  description          String
+  otherMetadata        String?
+  userId               String
+  images               String[]
+  addedDate            DateTime                     @default(now())
+  user                 User                         @relation("UserProperties", fields: [userId], references: [uuid])
+  transactionHistories PropertyTransactionHistory[]
+}
+
+model PropertyTransactionHistory {
+  uuid            String   @id @default(uuid())
+  propertyId      String
+  buyerMetadata   String
+  buyerKey        String
+  sellerMetadata  String
+  sellerKey       String
+  transactionDate DateTime @default(now())
+  property        Property @relation(fields: [propertyId], references: [uuid])
+
+  @@index([propertyId])
+}
