@@ -5,9 +5,7 @@ import PreHome from "./half_home";
 export const Home=()=>{
     return (
 <>
-<Navbar/>
 <PreHome/>
-<Footer/>
 
 </>
     );
