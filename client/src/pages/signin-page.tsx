@@ -1,7 +1,7 @@
-import Footer from "../components/common/footer";
+import {Footer} from "../components/common";
 import logo from '../assets/branding/logo.png';
 
-export default function SignUp() {
+export const SignInPage=()=>{
   return (
     <>
       <div className="main bg-gray-900 min-h-screen flex flex-col">
@@ -42,7 +42,7 @@ export default function SignUp() {
               className="aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-[#80caff] to-[#4f46e5] opacity-20"
             />
           </div>
-          <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-14 lg:px-8">
+          <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-40 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
               <img
                 alt="Your Company"
@@ -50,44 +50,24 @@ export default function SignUp() {
                 className="mx-auto h-36 w-auto"
               />
               <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
-               Register to Blockland
+                Sign in to your account
               </h2>
-              <p className=" text-center text-lg  leading-9 tracking-tight text-gray-400">
-               Making your buying and selling real state experience to next level 
-              </p>
             </div>
 
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
               <form action="#" method="POST" className="space-y-6">
                 <div>
-                  <label htmlFor="firstname" className="block text-sm font-medium leading-6 text-white">
-                   First Name
+                  <label htmlFor="email" className="block text-sm font-medium leading-6 text-white">
+                    Email address
                   </label>
                   <div className="mt-2">
                     <input
-                     placeholder="Enter your First Name"
-                      id="firstname"
-                      name="firstname"
-                      type="firstname"
+                      id="email"
+                      name="email"
+                      type="email"
                       required
-                      autoComplete="firstname"
-                      className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="firstname" className="block text-sm font-medium leading-6 text-white">
-                   Last Name
-                  </label>
-                  <div className="mt-2">
-                    <input
-                     placeholder="Enter your Last Name"
-                      id="lastname"
-                      name="lastname"
-                      type="lastname"
-                      required
-                      autoComplete="lastname"
-                      className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
+                      autoComplete="email"
+                      className="block w-full rounded-md border-0 py-1.5 text-gray-600 font-semibold px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
                     />
                   </div>
                 </div>
@@ -97,34 +77,20 @@ export default function SignUp() {
                     <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
                       Password
                     </label>
+                    <div className="text-sm">
+                      <a href="#" className="font-semibold text-orange-400 hover:text-orange-500">
+                        Forgot password?
+                      </a>
+                    </div>
                   </div>
                   <div className="mt-2">
                     <input
-                    placeholder="Enter password"
                       id="password"
                       name="password"
                       type="password"
                       required
                       autoComplete="current-password"
-                      className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="block text-sm font-medium leading-6 text-white">
-                      Confirm Password
-                    </label>
-                  </div>
-                  <div className="mt-2">
-                    <input
-                    placeholder="Re-enter password"
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      autoComplete="current-password"
-                      className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
+                      className="block w-full rounded-md border-0 py-1.5 text-gray-600 font-semibold px-2 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
                     />
                   </div>
                 </div>
@@ -134,7 +100,7 @@ export default function SignUp() {
                     type="submit"
                     className="flex w-full justify-center rounded-md bg-orange-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                   >
-                    Register Now
+                    Sign in
                   </button>
                   <p className="text-white flex justify-center py-2">or</p>
                   <button
@@ -152,9 +118,9 @@ export default function SignUp() {
               </form>
 
               <p className="mt-10 text-center text-sm text-gray-500">
-                Already Register?{' '}
+                Not Register?{' '}
                 <a href="#" className="font-semibold leading-6 text-orange-600 hover:text-orange-500">
-                  Sign In Now
+                  Sign Up Now
                 </a>
               </p>
             </div>

@@ -90,7 +90,7 @@ const footerNavigation = {
     ],
 }
 
-export default function Footer() {
+export const Footer=()=>{
     return (
         <>
           {/* Footer */}

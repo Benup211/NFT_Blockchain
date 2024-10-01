@@ -1,9 +1,12 @@
-import Footer from "../components/common/footer";
-import logo from '../assets/branding/logo.png';
-import NFTCard from "../components/common/NFTCard";
-import Navbar from "../components/common/navbar";
+import { useEffect } from "react";
+import {NFTCard} from "../components/common";
+import { useClientState } from "../state/client-state";
 
-export default function Buy() {
+export const BuyPage=()=>{
+  const {setNavbarTab} = useClientState();
+  useEffect(() => {
+    setNavbarTab("Buy");
+},[]);
   return (
     <>
 

@@ -1,7 +1,5 @@
-import Footer from "../components/common/footer";
 import logo from '../assets/branding/logo.png';
-import NFTCard from "../components/common/NFTCard";
-import Navbar from "../components/common/navbar";
+import {Navbar,NFTCard,Footer} from "../components/common/";
 import realstate1 from '../assets/images/realstate1.png'
 
 import { useState } from 'react'
@@ -55,7 +53,7 @@ const product = {
 
 
 
-export default function NFTDescription() {
+export const NFTDescriptionPage=()=>{
   
 
   return (

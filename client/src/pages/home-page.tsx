@@ -1,7 +1,7 @@
 
 import { BoltIcon, CalendarDaysIcon, UsersIcon } from '@heroicons/react/24/outline'
 import heroimage1 from '../assets/images/hero1image.png'
-import NFTCard from '../components/common/NFTCard'
+import {NFTCard} from '../components/common'
 
 
 const primaryFeatures = [
@@ -67,7 +67,7 @@ const primaryFeatures = [
 // ]
 
 
-export default function PreHome() {
+export const HomePage=()=>{
     return (
         <div className="bg-gray-900">
             <main>
