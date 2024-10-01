@@ -31,7 +31,7 @@ describe("Blockland", function () {
         expect(await Blockland.ownerOf(0)).to.equal(addr1.address);
     });
 
-    it("Should update _nextTokenId correctly after minting the property sucessfully", async function () {
+    it("Should update _nextTokenId correctly after minting the property successfully", async function () {
         const tokenURI1 = "ipfs://QmXy1...";
         const tokenURI2 = "ipfs://QmXy2...";
 
@@ -44,7 +44,7 @@ describe("Blockland", function () {
         expect(await Blockland.ownerOf(1)).to.equal(addr2.address);
     });
 
-    it("Should emit TokenMinted event upon minting the property sucessfully", async function () {
+    it("Should emit TokenMinted event upon minting the property successfully", async function () {
         const tokenURI = "ipfs://QmXy..."; // Example IPFS URI
 
         // Expect event to be emitted during minting
@@ -59,5 +59,26 @@ describe("Blockland", function () {
         // Mint a token and check the URI
         await Blockland.safeMint(addr1.address, tokenURI);
         expect(await Blockland.tokenURI(0)).to.equal(tokenURI);
+    });
+
+    // Test for changing the owner
+    it("Should allow the current owner to change ownership", async function () {
+        // Change ownership to addr1
+        await Blockland.changeOwner(addr1.address);
+
+        // Verify that addr1 is now the owner
+        expect(await Blockland.owner()).to.equal(addr1.address);
+    });
+
+    it("Should prevent non-owners from changing ownership", async function () {
+        // Attempt to change ownership from addr1, who is not the owner
+        await expect(Blockland.connect(addr1).changeOwner(addr2.address))
+            .to.be.reverted; // Check the error message based on the Ownable implementation
+    });
+
+    it("Should not allow changing to the zero address", async function () {
+        // Attempt to change ownership to the zero address
+        await expect(Blockland.changeOwner(ethers.ZeroAddress))
+            .to.be.revertedWith("New owner cannot be the zero address"); // Check against your custom error message
     });
 });

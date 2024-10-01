@@ -26,6 +26,12 @@ contract Blockland is ERC721, ERC721URIStorage, Ownable {
         emit TokenMinted(to, tokenId);
     }
 
+    // Function to change ownership
+    function changeOwner(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "New owner cannot be the zero address");
+        transferOwnership(newOwner);
+    }
+
     // The following functions are overrides required by Solidity.
     function tokenURI(uint256 tokenId)
         public
