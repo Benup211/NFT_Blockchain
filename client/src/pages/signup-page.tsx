@@ -1,7 +1,73 @@
-import {Footer} from "../components/common";
 import logo from "../assets/branding/logo.png";
-
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import React from "react";
+import { ethers } from "ethers";
+import { useAuthStore } from "../state/auth-state";
+import toast from "react-hot-toast";
+import { Loader } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 export const SignUpPage = () => {
+    const [firstname, setFirstname] = useState("");
+    const [lastname, setLastname] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [metaAccount, setMetaAccount] = useState(null);
+    const { registerUser, isLoading } = useAuthStore();
+    const navigate = useNavigate();
+
+    const connectToMeta = async () => {
+        if (window.ethereum == undefined) {
+            alert(
+                "Metamask wallet is not installed in your browser. Please install it and try again."
+            );
+            return;
+        }
+        try {
+            const providerMeta = new ethers.BrowserProvider(window.ethereum);
+            const accounts = await providerMeta.send("eth_requestAccounts", []);
+            const accountSignin = accounts[0];
+            setMetaAccount(accountSignin);
+            alert(
+                "MetaMask connected successfully with account: " + accountSignin
+            );
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const handleRegister = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        if (
+            firstname == "" ||
+            lastname == "" ||
+            email == "" ||
+            password == "" ||
+            confirmPassword == ""
+        ) {
+            alert("Fill all the fields");
+            return;
+        }
+        if (metaAccount == null) {
+            alert("Please connect to MetaMask");
+            return;
+        }
+        const data = {
+            first_name: firstname,
+            last_name: lastname,
+            email: email,
+            password: password,
+            confirmPassword: confirmPassword,
+            blockchainPublicKey: metaAccount,
+        };
+        try {
+            await registerUser(data);
+            toast.success("User registered successfully");
+            navigate("/signin");
+        } catch (error) {
+            toast.error((error as any).message);
+        }
+    };
     return (
         <>
             <div className="main bg-gray-900 min-h-screen flex flex-col">
@@ -87,6 +153,11 @@ export const SignUpPage = () => {
                                             name="firstname"
                                             type="firstname"
                                             required
+                                            value={firstname}
+                                            disabled={isLoading}
+                                            onChange={(e) =>
+                                                setFirstname(e.target.value)
+                                            }
                                             autoComplete="firstname"
                                             className="block w-full rounded-md border-0 py-1.5 text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
                                         />
@@ -94,7 +165,7 @@ export const SignUpPage = () => {
                                 </div>
                                 <div>
                                     <label
-                                        htmlFor="firstname"
+                                        htmlFor="lastname"
                                         className="block text-sm font-medium leading-6 text-white"
                                     >
                                         Last Name
@@ -105,13 +176,41 @@ export const SignUpPage = () => {
                                             id="lastname"
                                             name="lastname"
                                             type="lastname"
+                                            value={lastname}
+                                            disabled={isLoading}
+                                            onChange={(e) =>
+                                                setLastname(e.target.value)
+                                            }
                                             required
                                             autoComplete="lastname"
                                             className="block w-full rounded-md border-0 py-1.5 text-gray-600 font-semibold shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
                                         />
                                     </div>
                                 </div>
-
+                                <div>
+                                    <label
+                                        htmlFor="email"
+                                        className="block text-sm font-medium leading-6 text-white"
+                                    >
+                                        Email
+                                    </label>
+                                    <div className="mt-2">
+                                        <input
+                                            placeholder="Enter your Email"
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            value={email}
+                                            disabled={isLoading}
+                                            onChange={(e) =>
+                                                setEmail(e.target.value)
+                                            }
+                                            required
+                                            autoComplete="email"
+                                            className="block w-full rounded-md border-0 py-1.5 text-gray-600 font-semibold shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
+                                        />
+                                    </div>
+                                </div>
                                 <div>
                                     <div className="flex items-center justify-between">
                                         <label
@@ -127,6 +226,11 @@ export const SignUpPage = () => {
                                             id="password"
                                             name="password"
                                             type="password"
+                                            value={password}
+                                            disabled={isLoading}
+                                            onChange={(e) =>
+                                                setPassword(e.target.value)
+                                            }
                                             required
                                             autoComplete="current-password"
                                             className="block w-full rounded-md border-0 py-1.5 text-gray-600 font-semibold shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
@@ -136,7 +240,7 @@ export const SignUpPage = () => {
                                 <div>
                                     <div className="flex items-center justify-between">
                                         <label
-                                            htmlFor="password"
+                                            htmlFor="confirm_password"
                                             className="block text-sm font-medium leading-6 text-white"
                                         >
                                             Confirm Password
@@ -145,28 +249,28 @@ export const SignUpPage = () => {
                                     <div className="mt-2">
                                         <input
                                             placeholder="Re-enter password"
-                                            id="password"
-                                            name="password"
+                                            id="confirm_password"
+                                            name="confirm_password"
                                             type="password"
+                                            value={confirmPassword}
+                                            disabled={isLoading}
+                                            onChange={(e) =>
+                                                setConfirmPassword(
+                                                    e.target.value
+                                                )
+                                            }
                                             required
                                             autoComplete="current-password"
                                             className="block w-full rounded-md border-0 py-1.5 text-gray-600 font-semibold shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 px-2"
                                         />
                                     </div>
                                 </div>
-
                                 <div>
-                                    <button
-                                        type="submit"
-                                        className="flex w-full justify-center rounded-md bg-orange-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-                                    >
-                                        Register Now
-                                    </button>
-                                    <p className="text-white flex justify-center py-2">
-                                        or
-                                    </p>
-                                    <button
-                                        type="submit"
+                                    <a
+                                        aria-disabled={isLoading}
+                                        onClick={() => {
+                                            connectToMeta();
+                                        }}
                                         className="flex w-full justify-center border-2 border-gray-100 rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                                     >
                                         <div className="flex flex-row items-center space-x-2 ">
@@ -225,21 +329,43 @@ export const SignUpPage = () => {
                                                     d="m180.392 103.99l55.913 16.279l18.165 55.986h-47.924l-33.02.416l24.014-46.808zm-104.784 0l-17.151 25.873l24.017 46.808l-33.005-.416H1.631l18.063-55.985zm87.776-70.878l-15.639 42.239l-3.319 57.06l-1.27 17.885l-.101 45.688h-30.111l-.098-45.602l-1.274-17.986l-3.32-57.045l-15.637-42.239z"
                                                 />
                                             </svg>
-
-                                            <p> Connect with MetaMask</p>
+                                            {metaAccount == null ? (
+                                                <p> Connect To MetaMask</p>
+                                            ) : (
+                                                <p>
+                                                    Sucessfully Connected To
+                                                    MetaMask
+                                                </p>
+                                            )}
                                         </div>
+                                    </a>
+                                </div>
+                                <div>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        onClick={(e) => {
+                                            handleRegister(e);
+                                        }}
+                                        className="flex w-full justify-center rounded-md bg-orange-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                                    >
+                                        {isLoading ? (
+                                            <Loader className="w-6 h-6 animate-spin  mx-auto" />
+                                        ) : (
+                                            "Register"
+                                        )}
                                     </button>
                                 </div>
                             </form>
 
                             <p className="mt-10 text-center text-sm text-gray-500">
                                 Already Register?{" "}
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/signin"
                                     className="font-semibold leading-6 text-orange-600 hover:text-orange-500"
                                 >
                                     Sign In Now
-                                </a>
+                                </Link>
                             </p>
                         </div>
                     </div>
