@@ -2,7 +2,8 @@ import { body } from "express-validator";
 export class UserValidator {
     static createUser() {
         return [
-            body("name").notEmpty().withMessage("Name is required"),
+            body("first_name").notEmpty().withMessage("Name is required"),
+            body("last_name").notEmpty().withMessage("Name is required"),
             body("email")
                 .notEmpty()
                 .withMessage("Email is required")

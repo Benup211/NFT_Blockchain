@@ -12,10 +12,11 @@ export class UserRepository {
 
     }
 
-    static async createUser(name:string, email:string, password:string,blockchainPublicKey:string){
+    static async createUser(first_name:string,last_name:string, email:string, password:string,blockchainPublicKey:string){
         return await prisma.user.create({
             data: {
-                name: name,
+                first_name: first_name,
+                last_name: last_name,
                 email: email,
                 password: password,
                 blockchainPublicKey: blockchainPublicKey

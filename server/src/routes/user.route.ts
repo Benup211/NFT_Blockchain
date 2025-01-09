@@ -13,6 +13,7 @@ class UserRoute {
     postRoutes() {
         this.router.post("/register", UserValidator.createUser(), GlobalMiddleware.CheckValidationResult, UserController.createUser);
         this.router.post("/login", UserValidator.loginUser(), GlobalMiddleware.CheckValidationResult, UserController.loginUser);
+        this.router.post("/login-by-blockchain-public-key", UserValidator.getUserByBlockchainPublicKey(), GlobalMiddleware.CheckValidationResult, UserController.loginUserByBlockchainPublicKey);
     }
 }
 export const UserRoutes = new UserRoute().router;
