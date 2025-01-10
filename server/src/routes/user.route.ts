@@ -9,6 +9,7 @@ class UserRoute {
         this.postRoutes();
     }
     getRoutes() {
+        this.router.get('/getUser',GlobalMiddleware.CheckAuth,UserController.getUser);
     }
     postRoutes() {
         this.router.post("/register", UserValidator.createUser(), GlobalMiddleware.CheckValidationResult, UserController.createUser);

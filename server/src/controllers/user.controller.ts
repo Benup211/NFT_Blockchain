@@ -7,7 +7,6 @@ export class UserController {
     static async createUser(req: Request, res: Response, next: NextFunction) {
         try {
             const { first_name,last_name, email, password, blockchainPublicKey } = req.body;
-            console.log(req.body);
             const checkUser = await UserRepository.checkUser(email, blockchainPublicKey);
             if(checkUser){
                 ResponseService.CreateErrorResponse("User already exists",400);
@@ -59,5 +58,12 @@ export class UserController {
             next(error);
         }
     }
-
+    static async getUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = await UserRepository.getUserById(req.body.userID);
+            ResponseService.CreateSuccessResponse(user,200,res);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

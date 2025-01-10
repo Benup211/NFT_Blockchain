@@ -2,14 +2,15 @@ import {prisma} from "../model";
 
 export class UserRepository {
 
-    static async checkUser(email:string,blockchainPublicKey?:string){
+    static async checkUser(email: string, blockchainPublicKey?: string) {
         return await prisma.user.findFirst({
             where: {
-                email: email,
-                blockchainPublicKey: blockchainPublicKey
+                OR: [
+                    { email: email },
+                    { blockchainPublicKey: blockchainPublicKey }
+                ]
             }
         });
-
     }
 
     static async createUser(first_name:string,last_name:string, email:string, password:string,blockchainPublicKey:string){
