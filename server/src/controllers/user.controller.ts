@@ -66,4 +66,12 @@ export class UserController {
             next(error);
         }
     }
+    static async logoutUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            res.clearCookie("Token");
+            res.status(200).json({ message: "Logout successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

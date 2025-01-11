@@ -18,11 +18,28 @@ interface AuthStateProps {
         last_name: string;
         blockchainPublicKey: string;
     };
+    isAuthenticated: boolean;
+    setAuthenticated: (isAuthenticated: boolean) => void;
+    setUser: ({
+        uuid,
+        first_name,
+        last_name,
+        email,
+        blockchainPublicKey,
+    }: {
+        uuid: string;
+        first_name: string;
+        last_name: string;
+        email: string;
+        blockchainPublicKey: string;
+    }) => void;
     registerUser: (data: data) => Promise<void>;
     loginUser: (email: string, password: string) => Promise<void>;
     loginByBlockchainPublicKey: (blockchainPublicKey: string) => Promise<void>;
     isLoading: boolean;
     setLoading: (isLoading: boolean) => void;
+    getUser: () => Promise<void>;
+    logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStateProps>((set) => ({
@@ -32,6 +49,15 @@ export const useAuthStore = create<AuthStateProps>((set) => ({
         first_name: "",
         last_name: "",
         blockchainPublicKey: "",
+    },
+    isAuthenticated: false,
+    setAuthenticated: (isAuthenticated: boolean) => {
+        set({ isAuthenticated });
+    },
+    setUser: ({ uuid, first_name, last_name, email, blockchainPublicKey }) => {
+        set({
+            user: { uuid, email, first_name, last_name, blockchainPublicKey },
+        });
     },
     isLoading: false,
     setLoading: (isLoading: boolean) => {
@@ -79,6 +105,41 @@ export const useAuthStore = create<AuthStateProps>((set) => ({
                 }
             );
             set({ user: response.data });
+        } catch (err) {
+            const { response } = err as AxiosError<IErrorResponse>;
+            set({ isLoading: false });
+            throw Error(response?.data.errorMessage);
+        }
+    },
+    getUser: async () => {
+        set({ isLoading: true });
+        try {
+            const response = await axios.get(
+                "http://localhost:3001/api/user/getUser",
+                {
+                    withCredentials: true,
+                }
+            );
+            set({ user: response.data });
+        } catch (err) {
+            const { response } = err as AxiosError<IErrorResponse>;
+            set({ isLoading: false });
+            throw Error(response?.data.errorMessage);
+        }
+    },
+    logout: async () => {
+        set({ isLoading: true });
+        try {
+            const response = await axios.get(
+                "http://localhost:3001/api/user/logout",
+                {
+                    withCredentials: true,
+                }
+            );
+            set({
+                isLoading: false,
+                isAuthenticated: false,
+            });
         } catch (err) {
             const { response } = err as AxiosError<IErrorResponse>;
             set({ isLoading: false });

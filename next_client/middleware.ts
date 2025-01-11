@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
+
 const axiosInstance = axios.create({
     baseURL: "http://localhost:3001",
     withCredentials: true,
@@ -9,12 +10,11 @@ const axiosInstance = axios.create({
 export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     const isDashboardRoute = url.pathname === "/dashboard";
-    const isLoginRoute = url.pathname === "/login";
+    const isLoginRegisterRoute =
+        url.pathname === "/login" || url.pathname === "/register";
 
     try {
         const cookies = req.headers.get("cookie") || "";
-
-        console.log(cookies);
         const response = await axiosInstance.get("/api/user/getUser", {
             headers: {
                 Cookie: cookies,
@@ -25,7 +25,7 @@ export async function middleware(req: NextRequest) {
             url.pathname = "/";
             return NextResponse.redirect(url);
         }
-        if (isLoginRoute && isAuthenticated) {
+        if (isLoginRegisterRoute && isAuthenticated) {
             url.pathname = "/dashboard";
             return NextResponse.redirect(url);
         }
@@ -39,5 +39,12 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard", "/login"],
+    matcher: [
+        "/dashboard",
+        "/login",
+        "/register",
+        "/",
+        "/properties",
+        "/create-nft",
+    ],
 };
