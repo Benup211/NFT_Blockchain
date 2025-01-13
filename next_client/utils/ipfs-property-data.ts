@@ -3,7 +3,6 @@ export const pinJSONToIPFS = async (jsonContent: {
     property_location: string;
 }) => {
     const pinataJWT = process.env.NEXT_PUBLIC_PINATA_JWT;
-    console.log("pinataJWT", pinataJWT);
     if (!pinataJWT) {
         throw new Error(
             "Missing Pinata API credentials in environment variables."

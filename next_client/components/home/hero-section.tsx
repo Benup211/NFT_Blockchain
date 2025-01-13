@@ -53,7 +53,7 @@ export function HeroSection() {
                             size="lg"
                             className="border-white bg-white text-black hover:bg-gray-400 "
                         >
-                            <Link href="/learn-more">Learn More</Link>
+                            <Link href="#">Learn More</Link>
                         </Button>
                     </motion.div>
                 </div>

@@ -67,11 +67,10 @@ export function Navigation() {
     useEffect(() => {
         try {
             getUser().finally(() => {
-                setAuthenticated(true);
                 setLoading(false);
             });
         } catch (err) {
-            setAuthenticated(false);
+            console.log("error"+err);
         }
     }, [getUser]);
 
@@ -190,12 +189,6 @@ export function Navigation() {
                                             >
                                                 Dashboard
                                             </Link>
-                                            <Link
-                                                href="/profile"
-                                                className="font-medium"
-                                            >
-                                                Profile
-                                            </Link>
                                             <Button
                                                 onClick={handleLogout}
                                                 variant="destructive"
@@ -238,7 +231,7 @@ function UserMenu({
                 >
                     <Avatar className="h-8 w-8">
                         <AvatarFallback>
-                            {user.first_name.charAt(0)}
+                            {user?.first_name.charAt(0)||""}
                         </AvatarFallback>
                     </Avatar>
                 </Button>
@@ -246,9 +239,6 @@ function UserMenu({
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                     Log out

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, set } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,14 @@ import { jsPDF } from "jspdf";
 import { Checkbox } from "@/components/ui/checkbox";
 import { pinJSONToIPFS } from "@/utils/ipfs-property-data";
 import { toast } from "@/hooks/use-toast";
+import { getBlocklandContract } from "@/utils/blockland-contract";
+import { ethers, JsonRpcProvider } from "ethers";
+import { useAuthStore } from "@/state/auth-state";
+import { useRouter } from "next/navigation";
+import { Loader } from "lucide-react";
+import { usePropertyCreateStore } from "@/state/property-create-state";
+
+export type PropertyType = "house" | "apartment";
 
 type FormData = {
     name: string;
@@ -60,7 +68,7 @@ type FormData = {
     features: string[];
     description: string;
     price: string;
-    type: string;
+    type: PropertyType;
     image: string;
     creator: string;
     smartContract: string;
@@ -75,7 +83,7 @@ const initialFormData: FormData = {
     features: [],
     description: "",
     price: "",
-    type: "",
+    type: "house",
     image: "",
     creator: "",
     smartContract: "",
@@ -110,14 +118,71 @@ export default function MultiStepForm() {
         mode: "onChange",
         defaultValues: formData,
     });
+    const [ipfsData, setIpfsData] = useState<string>("");
+    const [tokenId, setTokenId] = useState<string>("");
+    const [checkingIpfs, setCheckingIpfs] = useState(false);
+    const { user } = useAuthStore();
+    const router = useRouter();
+    const { isCreating, createProperty } = usePropertyCreateStore();
 
-    const onSubmit: SubmitHandler<FormData> = (data) => {
-        console.log("Form submitted with data:", data);
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
         setFormData((prevData) => ({ ...prevData, ...data }));
         if (currentStep < steps.length - 1) {
             setCurrentStep((prevStep) => prevStep + 1);
         } else {
-            alert("Form submitted successfully!");
+            try {
+                await createProperty({
+                    name: formData.name,
+                    location: formData.location,
+                    features: formData.features,
+                    description: formData.description,
+                    price: formData.price,
+                    type: formData.type,
+                    image: formData.image,
+                    contractText: formData.contractText,
+                    tokenID: tokenId,
+                    ipfsHash: ipfsData,
+                });
+                router.push("/dashboard");
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    };
+    const mintNFT = async () => {
+        if (!window.ethereum) throw new Error("MetaMask is not installed.");
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = await provider.getSigner();
+            const contract = await getBlocklandContract(signer);
+            console.log("contract", contract);
+            const nonceProvider = new JsonRpcProvider(
+                process.env.NEXT_PUBLIC_NETWORK_URL
+            );
+            const nonce = await nonceProvider.getTransactionCount(
+                await signer.getAddress(),
+                "latest"
+            );
+            const tx = await contract.safeMint(
+                user.blockchainPublicKey,
+                ipfsData,
+                {
+                    nonce: nonce,
+                    gasLimit: 300000,
+                }
+            );
+            await tx.wait();
+            toast({
+                title: "Success",
+                description: "NFT mint successful.",
+            });
+        } catch (err) {
+            toast({
+                title: "Error",
+                description: "Minting NFT failed.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -144,6 +209,7 @@ export default function MultiStepForm() {
 
     const verifyIPFS = async () => {
         try {
+            setCheckingIpfs(true);
             const data = await pinJSONToIPFS({
                 property_name: formData.name,
                 property_location: formData.location,
@@ -154,12 +220,13 @@ export default function MultiStepForm() {
                     description: "IPFS data is a duplicate. Please try again.",
                     variant: "destructive",
                 });
-                return;
+                router.push("/dashboard");
             } else {
                 toast({
                     title: "Success",
                     description: "IPFS data has been verified.",
                 });
+                setIpfsData(data.IpfsHash);
                 setIsVerified(true);
             }
         } catch (error) {
@@ -168,7 +235,9 @@ export default function MultiStepForm() {
                 description: "Failed to verify IPFS data.",
                 variant: "destructive",
             });
-            return;
+            router.push("/dashboard");
+        } finally {
+            setCheckingIpfs(false);
         }
     };
 
@@ -333,7 +402,10 @@ export default function MultiStepForm() {
                                         </Label>
                                         <Select
                                             onValueChange={(value) =>
-                                                setValue("type", value)
+                                                setValue(
+                                                    "type",
+                                                    value as PropertyType
+                                                )
                                             }
                                         >
                                             <SelectTrigger
@@ -724,16 +796,20 @@ export default function MultiStepForm() {
 
                                         <div className="col-span-1 md:col-span-2 mt-6">
                                             <Button
-                                                onClick={()=>{
-                                                  verifyIPFS()
+                                                onClick={() => {
+                                                    verifyIPFS();
                                                 }}
                                                 type="button"
                                                 disabled={isVerified}
                                                 className="w-full"
                                             >
-                                                {isVerified
-                                                    ? "Verified in IPFS"
-                                                    : "Verify in IPFS"}
+                                                {isVerified ? (
+                                                    "Verified in IPFS"
+                                                ) : checkingIpfs ? (
+                                                    <Loader className="w-6 h-6 animate-spin  mx-auto" />
+                                                ) : (
+                                                    "Verify in IPFS"
+                                                )}
                                             </Button>
                                             {isVerified && (
                                                 <div className="mt-2 flex items-center justify-center text-green-500">
@@ -944,6 +1020,22 @@ export default function MultiStepForm() {
                                                     </a>
                                                 </Label>
                                             </div>
+                                            <Button
+                                                type="button"
+                                                onClick={() => {
+                                                    mintNFT();
+                                                }}
+                                            >
+                                                Mint NFT
+                                            </Button>
+                                            <Input
+                                                id="tokenID"
+                                                placeholder="Add Minted TokenID"
+                                                className="flex-grow"
+                                                onChange={(e) =>{
+                                                    setTokenId(e.target.value)
+                                                }}
+                                            />
                                         </div>
                                     </div>
                                 </>
@@ -960,6 +1052,7 @@ export default function MultiStepForm() {
                             setCurrentStep((prevStep) => prevStep - 1)
                         }
                         variant="outline"
+                        disabled={checkingIpfs}
                     >
                         Previous
                     </Button>
@@ -969,11 +1062,14 @@ export default function MultiStepForm() {
                     form="nftForm"
                     disabled={
                         (currentStep === 2 && !watch("isContractGenerated")) ||
-                        (currentStep === 3 && !isVerified)
+                        (currentStep === 3 && !isVerified) ||
+                        (currentStep === 4 && tokenId == "")
                     }
                     className={currentStep === 0 ? "ml-auto" : ""}
                 >
-                    {currentStep === steps.length - 1 ? "Mint NFT" : "Next"}
+                    {currentStep === steps.length - 1
+                        ? "Add to MetaServer"
+                        : "Next"}
                 </Button>
             </CardFooter>
         </Card>

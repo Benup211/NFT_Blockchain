@@ -22,12 +22,13 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
         onClick={() => onClick(property)}
       >
         <CardContent className="p-0">
-          <div className="relative h-48 w-full group">
+            <div className="relative h-48 w-full group">
             <Image
-              src={property.image}
+              src={`http://localhost:3001/${property.image}`}
               alt={property.name}
-              layout="fill"
-              objectFit="cover"
+              fill
+              priority
+              sizes='100%'
               className="rounded-t-lg transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black bg-opacity-20 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
@@ -36,14 +37,14 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
               size="icon" 
               className="absolute top-2 right-2 bg-background/80 hover:bg-background"
               onClick={(e) => {
-                e.stopPropagation();
-                // Add to favorites logic here
+              e.stopPropagation();
+              // Add to favorites logic here
               }}
             >
               <Heart className="h-4 w-4 text-primary" />
               <span className="sr-only">Add to favorites</span>
             </Button>
-          </div>
+            </div>
           <div className="p-4">
             <h3 className="text-lg font-semibold line-clamp-1 mb-1">{property.name}</h3>
             <p className="text-sm text-muted-foreground mb-2 flex items-center">

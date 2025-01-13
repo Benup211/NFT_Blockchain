@@ -7,6 +7,8 @@ import { Property, usePropertyStore } from '@/state/property-state'
 import { Check, ExternalLink, Home, Building } from 'lucide-react'
 import { toast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
+import Link from 'next/link'
+import { useAuthStore } from '@/state/auth-state'
 
 interface PropertyDetailProps {
   property: Property
@@ -16,16 +18,17 @@ interface PropertyDetailProps {
 
 export function PropertyDetail({ property, isOpen, onClose }: PropertyDetailProps) {
   const [isBuying, setIsBuying] = useState(false)
+  const {user}=useAuthStore();
   const buyProperty = usePropertyStore((state) => state.buyProperty)
 
   const handleBuyNow = async () => {
     setIsBuying(true)
     try {
-      const result = await buyProperty(property.id)
+      const result = await buyProperty(property.id,property.price,user.uuid)
       if (result.success) {
         toast({
           title: "Purchase Successful",
-          description: `You have successfully purchased ${property.name}`,
+          description: `Property ${property.name} added in the transaction list`,
         })
         onClose()
       } else {
@@ -62,10 +65,11 @@ export function PropertyDetail({ property, isOpen, onClose }: PropertyDetailProp
           >
             <div className="relative h-64 w-full">
               <Image
-                src={property.image}
+                src={`http://localhost:3001/${property.image}`}
                 alt={property.name}
-                layout="fill"
-                objectFit="cover"
+                fill
+                priority
+                sizes='100%'
                 className="rounded-lg"
               />
               {property.limitedOffer && (
@@ -88,18 +92,15 @@ export function PropertyDetail({ property, isOpen, onClose }: PropertyDetailProp
               </ul>
             </div>
             <div>
+              <h3 className="font-semibold mb-2">Description:</h3>
+              <p>{property.description}</p>
+            </div>
+            <div>
               <h3 className="font-semibold mb-2">Property Type:</h3>
               <Badge variant="secondary" className="flex items-center w-fit">
                 {property.type === 'house' ? <Home className="h-4 w-4 mr-2" /> : <Building className="h-4 w-4 mr-2" />}
                 {property.type}
               </Badge>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Creator/Developer:</h3>
-              <a href="#" className="text-primary hover:underline flex items-center">
-                {property.creator}
-                <ExternalLink className="h-4 w-4 ml-1" />
-              </a>
             </div>
             <Button 
               className="w-full" 
@@ -109,8 +110,8 @@ export function PropertyDetail({ property, isOpen, onClose }: PropertyDetailProp
               {isBuying ? 'Processing...' : 'Buy Now'}
             </Button>
             <div className="text-sm text-muted-foreground">
-              <p>Smart Contract: {property.smartContract}</p>
-              <p>Blockchain: Ethereum</p>
+                <Link href={`https://turquoise-main-stingray-37.mypinata.cloud/ipfs/${property.ipfsHash}`} target="_blank" rel="noopener noreferrer">IPFS Hash: {property.ipfsHash}</Link>
+              <p>Blockchain: Ethereum TokenID:{property.tokenID}</p>
             </div>
           </motion.div>
         </AnimatePresence>

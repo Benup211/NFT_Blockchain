@@ -120,11 +120,20 @@ export const useAuthStore = create<AuthStateProps>((set) => ({
                     withCredentials: true,
                 }
             );
-            set({ user: response.data });
+            set({ user: response.data,isAuthenticated: true, isLoading: false });
         } catch (err) {
             const { response } = err as AxiosError<IErrorResponse>;
-            set({ isLoading: false });
-            throw Error(response?.data.errorMessage);
+            set({
+                isLoading: false,
+                isAuthenticated: false,
+                user: {
+                    uuid: "",
+                    email: "",
+                    first_name: "",
+                    last_name: "",
+                    blockchainPublicKey: "",
+                },
+            });
         }
     },
     logout: async () => {
