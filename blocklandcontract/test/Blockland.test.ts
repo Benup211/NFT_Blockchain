@@ -14,7 +14,6 @@ describe("Blockland", function () {
 
         // Deploy the contract with the initial owner set
         Blockland = await BlocklandFactory.deploy(owner.address);
-        // await Blockland.deployed();
     });
 
     it("Should deploy with the correct address", async function () {
@@ -80,5 +79,29 @@ describe("Blockland", function () {
         // Attempt to change ownership to the zero address
         await expect(Blockland.changeOwner(ethers.ZeroAddress))
             .to.be.revertedWith("New owner cannot be the zero address"); // Check against your custom error message
+    });
+
+    it("Should transfer NFT between users", async function () {
+        const tokenURI = "ipfs://QmXy...";
+
+        // Mint a token to addr1
+        await Blockland.safeMint(addr1.address, tokenURI);
+
+        // Transfer the token from addr1 to addr2
+        await Blockland.connect(addr1).transferNFT(addr1.address, addr2.address, 0);
+
+        // Verify the new owner of the token
+        expect(await Blockland.ownerOf(0)).to.equal(addr2.address);
+    });
+
+    it("Should prevent unauthorized users from transferring NFT", async function () {
+        const tokenURI = "ipfs://QmXy...";
+
+        // Mint a token to addr1
+        await Blockland.safeMint(addr1.address, tokenURI);
+
+        // Attempt to transfer the token from addr1 to addr2 by a non-owner
+        await expect(Blockland.transferNFT(addr1.address, addr2.address, 0))
+            .to.be.revertedWith("Caller is not owner nor approved");
     });
 });
