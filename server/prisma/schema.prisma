@@ -8,38 +8,55 @@ datasource db {
 }
 
 model User {
-  uuid                String     @id @default(uuid())
-  email               String     @unique
-  first_name          String
-  last_name           String
-  password            String
-  blockchainPublicKey String     @unique
-  properties          Property[] @relation("UserProperties")
+  uuid                 String        @id @default(uuid())
+  email                String        @unique
+  first_name           String
+  last_name            String
+  password             String
+  blockchainPublicKey  String        @unique
+  properties           Property[]    @relation("UserProperties")
+  transactionsAsBuyer  Transaction[] @relation("BuyerTransactions")
+  transactionsAsSeller Transaction[] @relation("SellerTransactions")
 }
 
 model Property {
-  uuid                 String                       @id @default(uuid())
-  address              String
-  price                Float
-  description          String
-  otherMetadata        String?
-  userId               String
-  images               String[]
-  addedDate            DateTime                     @default(now())
-  onSale               Boolean                      @default(false)
-  user                 User                         @relation("UserProperties", fields: [userId], references: [uuid])
-  transactionHistories PropertyTransactionHistory[]
+  id           String       @id @default(cuid())
+  name         String
+  location     String
+  features     String[]
+  description  String
+  price        String
+  type         PropertyType
+  image        String
+  contractText String
+  tokenID      String
+  ipfsHash     String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  userId       String
+  user         User         @relation("UserProperties", fields: [userId], references: [uuid])
+  listed       Boolean      @default(false)
+
+  Transaction Transaction[]
 }
 
-model PropertyTransactionHistory {
-  uuid            String   @id @default(uuid())
-  propertyId      String
-  buyerMetadata   String
-  buyerKey        String
-  sellerMetadata  String
-  sellerKey       String
-  transactionDate DateTime @default(now())
-  property        Property @relation(fields: [propertyId], references: [uuid])
+enum PropertyType {
+  apartment
+  house
+}
 
-  @@index([propertyId])
+model Transaction {
+  id           String   @id @default(cuid())
+  buyerId      String
+  buyer        User     @relation("BuyerTransactions", fields: [buyerId], references: [uuid])
+  sellerId     String
+  seller       User     @relation("SellerTransactions", fields: [sellerId], references: [uuid])
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id])
+  amount       String
+  buyerAccept  Boolean  @default(true)
+  sellerAccept Boolean  @default(false)
+  completed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

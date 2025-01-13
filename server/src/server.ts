@@ -3,8 +3,9 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
-import {UserRoutes,PropertyHistoryRoutes,PropertyRoutes} from "./routes";
+import { UserRoutes, PropertyRoutes,TransactionRoutes } from "./routes";
 import dotenv from "dotenv";
+import path from "path";
 dotenv.config();
 
 export class MainServer {
@@ -18,22 +19,26 @@ export class MainServer {
     }
 
     async setConfiguration() {
-        this.app.use(express.json());
+        this.app.use(express.json({limit: '50mb'}));
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(cookieParser());
         this.app.use(bodyParser.json());
         this.app.use(cors(
             {
-                origin: process.env.FRONT_END_URL,
+                origin: "http://localhost:3000",
                 credentials: true,
             }
         ));
+        this.app.use(
+            "/uploads",
+            express.static(path.join(__dirname, "../uploads"))
+        );
     }
 
     setRoutes() {
         this.app.use("/api/user", UserRoutes);
         this.app.use("/api/property", PropertyRoutes);
-        this.app.use("/api/property-history", PropertyHistoryRoutes);
+        this.app.use("/api/transaction", TransactionRoutes);
     }
 
     handle404Error() {

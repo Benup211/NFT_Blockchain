@@ -1,39 +1,26 @@
 import {prisma} from "../model";
-
+enum PropertyType {
+    apartment = "apartment",
+    house = "house"
+}
 export class PropertyRepository {
 
 
     static async createProperty(
-        address: string,
-        price: number,
-        description: string,
-        userId: string,
-        images: string[],
-        otherMetadata?: string
+        name:string,location:string,features:string[],description:string,price:string,type:PropertyType,image:string,contractText:string,tokenID:string,ipfsHash:string,userId:string
     ) {
         return await prisma.property.create({
             data: {
-                address,
-                price,
+                name,
+                location,
+                features,
                 description,
-                otherMetadata,
-                userId,
-                images,
-            },
-        });
-    }
-
-    static async getPropertyById(id: string) {
-        return await prisma.property.findUnique({
-            where: {
-                uuid: id,
-            },
-        });
-    }
-
-    static async getPropertyByUserId(userId: string) {
-        return await prisma.property.findMany({
-            where: {
+                price,
+                type,
+                image,
+                contractText,
+                tokenID,
+                ipfsHash,
                 userId,
             },
         });
@@ -42,41 +29,34 @@ export class PropertyRepository {
     static async getAllProperties() {
         return await prisma.property.findMany({
             where: {
-                onSale: true,
+                listed: true,
             },
         });
     }
 
-    static async transferProperty(id: string, userId:string) {
-        return await prisma.property.update({
+    static async getAllPropertiesByUserId(userId:string) {
+        return await prisma.property.findMany({
             where: {
-                uuid: id,
-            },
-            data: {
                 userId,
-                onSale: false,
             },
         });
     }
 
-    static async updatePriceOfProperty(id: string, price: number) {
-        return await prisma.property.update({
+    static async getPropertyById(id:string) {
+        return await prisma.property.findUnique({
             where: {
-                uuid: id,
-            },
-            data: {
-                price,
+                id,
             },
         });
     }
 
-    static async updateSaleStatus(id: string, onSale: boolean) {
+    static async updatePropertyListing(id:string,listed:boolean) {
         return await prisma.property.update({
             where: {
-                uuid: id,
+                id,
             },
             data: {
-                onSale,
+                listed,
             },
         });
     }

@@ -16,6 +16,7 @@ export class GlobalMiddleware {
         try {
             const token = req.cookies.Token;
             if (!token) {
+                res.clearCookie("Token");
                 next(ResponseService.CreateErrorResponse("Unauthorized", 401));
             }
             const decodedToken = (await JwtService.verify(
@@ -23,6 +24,7 @@ export class GlobalMiddleware {
                 process.env.JWT_SECRET as string
             )) as IDecodedToken;
             if (!decodedToken) {
+                res.clearCookie("Token");
                 next(ResponseService.CreateErrorResponse("Invalid token", 401));
             }
             req.body.userID = decodedToken.userID;

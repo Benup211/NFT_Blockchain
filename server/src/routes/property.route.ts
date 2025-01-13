@@ -9,18 +9,8 @@ class Property {
         this.postRoutes();
     }
     getRoutes() {
-        this.router.get(
-            "/get/:id",
-            PropertyValidator.getPropertyById(),
-            GlobalMiddleware.CheckValidationResult,
-            PropertyController.getPropertyById
-        );
-        this.router.get(
-            "/own-properties",
-            GlobalMiddleware.CheckAuth,
-            PropertyController.getPropertyByUserId
-        );
         this.router.get("/all", PropertyController.getAllProperties);
+        this.router.get("/all-by-user", GlobalMiddleware.CheckAuth,PropertyController.getAllPropertiesByUserId);
     }
     postRoutes() {
         this.router.post(
@@ -31,25 +21,11 @@ class Property {
             PropertyController.createProperty
         );
         this.router.post(
-            "/transfer",
-            PropertyValidator.transferProperty(),
+            "/update-listing",
+            PropertyValidator.updatePropertyListing(),
             GlobalMiddleware.CheckValidationResult,
             GlobalMiddleware.CheckAuth,
-            PropertyController.transferProperty
-        );
-        this.router.post(
-            "/update-price",
-            PropertyValidator.updatePriceOfProperty(),
-            GlobalMiddleware.CheckValidationResult,
-            GlobalMiddleware.CheckAuth,
-            PropertyController.updatePriceOfProperty
-        );
-        this.router.post(
-            "/update-sale-status",
-            PropertyValidator.updateSaleStatus(),
-            GlobalMiddleware.CheckValidationResult,
-            GlobalMiddleware.CheckAuth,
-            PropertyController.updateSaleStatus
+            PropertyController.updatePropertyListing
         );
     }
 }

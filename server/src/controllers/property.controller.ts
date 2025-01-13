@@ -1,20 +1,25 @@
 import { Request, Response, NextFunction } from "express";
 import { ResponseService } from "../services";
 import { PropertyRepository } from "../repository";
-
+import { getImageFormat,saveImageFromBase64 } from "../services/image.upload.service";
 export class PropertyController {
 
     static async createProperty(req: Request, res: Response, next: NextFunction) {
         try {
-            const { address, price, description, images, otherMetadata } = req.body;
+            const { name,location,features,description,price,type,contractText,tokenID,ipfsHash,image} = req.body;
+            const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+            const filename = `property-${uniqueSuffix}.${getImageFormat(image)}`;
             const userId = req.body.userID;
+            let imagePath:any = "";
+            await saveImageFromBase64(image, filename)
+            .then((filePath) => {
+                imagePath = filePath;
+            })
+            .catch((err) => {
+                throw new Error("Error saving image");
+            });
             const property = await PropertyRepository.createProperty(
-                address,
-                price,
-                description,
-                userId,
-                images,
-                otherMetadata
+                name,location,features,description,price,type,imagePath,contractText,tokenID,ipfsHash,userId
             );
             ResponseService.CreateSuccessResponse(property,201,res);
         } catch (error) {
@@ -22,63 +27,37 @@ export class PropertyController {
         }
     }
 
-    static async getPropertyById(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id } = req.params;
-            const property = await PropertyRepository.getPropertyById(id);
-            ResponseService.CreateSuccessResponse(property,200,res);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    static async getPropertyByUserId(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = req.body.userID;
-            const property = await PropertyRepository.getPropertyByUserId(userId);
-            ResponseService.CreateSuccessResponse(property,200,res);
-        } catch (error) {
-            next(error);
-        }
-    }
-
     static async getAllProperties(req: Request, res: Response, next: NextFunction) {
-        try {
-            const property = await PropertyRepository.getAllProperties();
-            ResponseService.CreateSuccessResponse(property,200,res);
-        } catch (error) {
-            next(error);
+        try{
+            const properties = await PropertyRepository.getAllProperties();
+            ResponseService.CreateSuccessResponse(properties,200,res);
+        }catch(err){
+            next(err);
         }
     }
 
-    static async transferProperty(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id,userId } = req.body;
-            const property = await PropertyRepository.transferProperty(id, userId);
-            ResponseService.CreateSuccessResponse(property,200,res);
-        } catch (error) {
-            next(error);
+    static async getAllPropertiesByUserId(req: Request, res: Response, next: NextFunction) {
+        try{
+            const userId = req.body.userID;
+            const properties = await PropertyRepository.getAllPropertiesByUserId(userId);
+            ResponseService.CreateSuccessResponse(properties,200,res);
+        }catch(err){
+            next(err);
         }
     }
 
-    static async updatePriceOfProperty(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id, price } = req.body;
-            const property = await PropertyRepository.updatePriceOfProperty(id, price);
+    static async updatePropertyListing(req: Request, res: Response, next: NextFunction) {
+        try{
+            const { id,listed } = req.body;
+            const userId = req.body.userID;
+            const checkProperty = await PropertyRepository.getPropertyById(id);
+            if(!checkProperty || checkProperty.userId !== userId){
+                throw new Error("You are not authorized to update this property");
+            }
+            const property = await PropertyRepository.updatePropertyListing(id,listed);
             ResponseService.CreateSuccessResponse(property,200,res);
-        } catch (error) {
-            next(error);
+        }catch(err){
+            next(err);
         }
     }
-
-    static async updateSaleStatus(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { id, status } = req.body;
-            const property = await PropertyRepository.updateSaleStatus(id, status);
-            ResponseService.CreateSuccessResponse(property,200,res);
-        } catch (error) {
-            next(error);
-        }
-    }
-
 }
