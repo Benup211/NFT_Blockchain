@@ -29,7 +29,7 @@ contract Blockland is ERC721, ERC721URIStorage, Ownable {
     // Function to transfer NFT
     function transferNFT(address from, address to, uint256 tokenId) public {
         require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
-        _transfer(from, to, tokenId);
+        safeTransferFrom(from, to, tokenId);
     }
 
     // Define the _isApprovedOrOwner function
