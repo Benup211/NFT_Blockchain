@@ -61,7 +61,6 @@ export class UserController {
     static async getUser(req: Request, res: Response, next: NextFunction) {
         try {
             const user = await UserRepository.getUserById(req.body.userID);
-            console.log(user);
             if(!user){
                 res.clearCookie("Token");
                 ResponseService.CreateErrorResponse("User not found",400);

@@ -23,19 +23,23 @@ export class TransactionRepository {
         );
     }
 
-    static async getTransactionByPropertyId(propertyId: string,buyerOrsellerId: string) {
+    static async getTransactionById(transactionId: string) {
+        return await prisma.transaction.findUnique(
+            {
+                where:{
+                    id:transactionId
+                }
+            }
+        );
+    }
+
+    static async getTransactionByPropertyId(propertyId: string,buyerId: string) {
         return await prisma.transaction.findFirst(
             {
                 where:{
                     propertyId,
-                    OR:[
-                        {
-                            buyerId:buyerOrsellerId
-                        },
-                        {
-                            sellerId:buyerOrsellerId
-                        }
-                    ]
+                    buyerId:buyerId,
+                    completed:false
                 }
             }
         );
@@ -57,6 +61,28 @@ export class TransactionRepository {
         );
     }
     
+    static async getTransactionsHistory(userId:string){
+        return await prisma.transaction.findMany(
+            {
+                where:{
+                    OR:[
+                        {
+                            buyerId:userId
+                        },
+                        {
+                            sellerId:userId
+                        }
+                    ],
+                },
+                include:{
+                    property:true,
+                    seller:true,
+                    buyer:true
+                }
+            }
+        );
+    }
+
     static async getSellerTransactions(sellerId: string) {
         return await prisma.transaction.findMany(
             {
@@ -71,6 +97,27 @@ export class TransactionRepository {
                 }
             }
         );
+    }
+
+    static async updateSellerStatus(transactionId: string,sellerId: string) {
+        return await prisma.transaction.update({
+            where: {
+                id: transactionId,
+                sellerId:sellerId
+            },
+            data: {
+                sellerAccept: true
+            }
+        });
+    }
+
+    static async findSellerStatus(transactionId:string,sellerId:string){
+        return await prisma.transaction.findFirst({
+            where:{
+                id:transactionId,
+                sellerId:sellerId
+            }
+        });
     }
 
     static async acceptTransaction(transactionId: string) {

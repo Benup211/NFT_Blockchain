@@ -60,4 +60,16 @@ export class PropertyRepository {
             },
         });
     }
+
+    static async changePropertyOwner(id:string,userId:string) {
+        return await prisma.property.update({
+            where: {
+                id,
+            },
+            data: {
+                userId,
+                listed:false,
+            },
+        });
+    }
 }
