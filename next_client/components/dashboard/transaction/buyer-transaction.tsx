@@ -1,78 +1,83 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Table } from './ui/table';
-import { Modal } from './ui/modal';
+import { Table } from "./ui/table";
+import { Modal } from "./ui/modal";
 import { Badge } from "@/components/ui/badge";
-import { Home, MapPin,Coins, FileText, Check, X, Search } from 'lucide-react';
+import { Home, MapPin, Coins, FileText, Check, X, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useBuyTransactionStore } from '@/state/buy-transaction-state';
-import { toast } from '@/hooks/use-toast';
+import { useBuyTransactionStore } from "@/state/buy-transaction-state";
+import { toast } from "@/hooks/use-toast";
+import { transferETH, transferNFT } from "@/utils/transaction-property";
+import { useRouter } from "next/navigation";
 
-export type PropertyType = 'house' | 'apartment'
+export type PropertyType = "house" | "apartment";
 
-interface Seller{
-    uuid:string
-    email:string
-    first_name:string
-    last_name:string
-    blockchainPublicKey:string
+interface Seller {
+    uuid: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    blockchainPublicKey: string;
 }
 
-interface buyer{
-    uuid:string
-    email:string
-    first_name:string
-    last_name:string
-    blockchainPublicKey:string
+interface buyer {
+    uuid: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    blockchainPublicKey: string;
 }
 
-interface Property{
-    id:string
-    name:string
-    location:string
-    features:string[]
-    description:string
-    price:string
-    type:PropertyType
-    image:string
-    contractText:string
-    tokenID:string
-    ipfsHash:string
-    createdAt:string
-    updatedAt:string
-    userId:string
-    listed:boolean
+interface Property {
+    id: string;
+    name: string;
+    location: string;
+    features: string[];
+    description: string;
+    price: string;
+    type: PropertyType;
+    image: string;
+    contractText: string;
+    tokenID: string;
+    ipfsHash: string;
+    createdAt: string;
+    updatedAt: string;
+    userId: string;
+    listed: boolean;
 }
 
-interface Transaction{
-    id:string
-    buyerId:string
-    sellerId:string
-    propertyId:string
-    amount:string
-    buyerAccept:boolean
-    sellerAccept:boolean
-    completed:boolean
-    createdAt:string
-    updatedAt:string
-    property:Property
-    seller:Seller
-    buyer:buyer
+interface Transaction {
+    id: string;
+    buyerId: string;
+    sellerId: string;
+    propertyId: string;
+    amount: string;
+    buyerAccept: boolean;
+    sellerAccept: boolean;
+    completed: boolean;
+    createdAt: string;
+    updatedAt: string;
+    property: Property;
+    seller: Seller;
+    buyer: buyer;
 }
 
 const columns = [
-    { key: 'property.name', header: 'Property Name', sortable: true },
-    { key: 'property.location', header: 'Location', sortable: true },
-    { key: 'amount', header: 'Amount (eth)', sortable: true },
-    { key: 'sellerAccept', header: 'Status', sortable: true },
+    { key: "property.name", header: "Property Name", sortable: true },
+    { key: "property.location", header: "Location", sortable: true },
+    { key: "amount", header: "Amount (eth)", sortable: true },
+    { key: "sellerAccept", header: "Status", sortable: true },
 ];
 
 export default function BuyerTransaction() {
-    const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+    const [selectedTransaction, setSelectedTransaction] =
+        useState<Transaction | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const { getBuyerTransactions, transactions, isloading } = useBuyTransactionStore();
+    const [searchTerm, setSearchTerm] = useState("");
+    const { getBuyerTransactions, transactions, isloading, finalTransactions } =
+        useBuyTransactionStore();
+    const router = useRouter();
 
     const handleRowClick = (transaction: Transaction) => {
         setSelectedTransaction(transaction);
@@ -85,23 +90,88 @@ export default function BuyerTransaction() {
     };
 
     const handleCreateTransaction = () => {
-        alert(`Transaction confirmed for ${selectedTransaction?.property.name}`);
+        alert(
+            `Transaction confirmed for ${selectedTransaction?.property.name}`
+        );
+        if (
+            selectedTransaction?.seller.blockchainPublicKey &&
+            selectedTransaction?.amount
+        ) {
+            transferETH(
+                selectedTransaction.seller.blockchainPublicKey,
+                selectedTransaction.amount
+            )
+                .then(async (txHash) => {
+                    transferNFT(
+                        selectedTransaction.property.tokenID,
+                        selectedTransaction.buyer.blockchainPublicKey
+                    )
+                        .then(async (txHash) => {
+                            console.log("Transaction Hash:", txHash);
+                            toast({
+                                title: "Success",
+                                description: "Transaction successful!.",
+                            });
+                            const data =await finalTransactions(
+                                selectedTransaction.id,
+                                selectedTransaction.property.id,
+                                selectedTransaction.buyer.uuid
+                            );
+                            if (data.success) {
+                                toast({
+                                    title: "Success",
+                                    description: data.message,
+                                });
+                                router.push("/properties");
+                            } else {
+                                toast({
+                                    title: "Error",
+                                    description: data.message,
+                                    variant: "destructive",
+                                });
+                                router.push("/properties");
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Sending Transaction:", error);
+                            toast({
+                                title: "Error",
+                                description: "Error sending NFT",
+                                variant: "destructive",
+                            });
+                        });
+                })
+                .catch((error) => {
+                    console.error("Sending Transaction:", error);
+                    toast({
+                        title: "Error",
+                        description: "Error sending ETH",
+                        variant: "destructive",
+                    });
+                });
+        } else {
+            toast({
+                title: "Error",
+                description: "Transaction details are incomplete.",
+                variant: "destructive",
+            });
+        }
         handleClose();
     };
 
     const renderTableCell = (item: any, key: string) => {
-        if (key === 'amount') {
+        if (key === "amount") {
             return `$${item[key].toLocaleString()}`;
         }
-        if (key === 'sellerAccept') {
+        if (key === "sellerAccept") {
             return (
                 <Badge variant={item[key] ? "default" : "secondary"}>
-                    {item[key] ? 'Accepted' : 'Pending'}
+                    {item[key] ? "Accepted" : "Pending"}
                 </Badge>
             );
         }
-        if (key.includes('.')) {
-            const keys = key.split('.');
+        if (key.includes(".")) {
+            const keys = key.split(".");
             return keys.reduce((obj, k) => (obj ? obj[k] : null), item);
         }
         return item[key];
@@ -114,25 +184,30 @@ export default function BuyerTransaction() {
                 toast({
                     title: "Success",
                     description: data.message,
-                })
+                });
             } else {
                 toast({
                     title: "Error",
                     description: data.message,
-                    variant:"destructive"
-                })
+                    variant: "destructive",
+                });
             }
         };
         fetchData();
     }, []);
 
-    if(isloading){
-      return <div>Loading...</div>
+    if (isloading) {
+        return <div>Loading...</div>;
     }
 
-    const filteredTransactions = transactions.filter(transaction =>
-        transaction.property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.property.location.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredTransactions = transactions.filter(
+        (transaction) =>
+            transaction.property.name
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+            transaction.property.location
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -154,12 +229,19 @@ export default function BuyerTransaction() {
                 onRowClick={handleRowClick}
                 renderCell={renderTableCell}
             />
-            <Modal isOpen={!!selectedTransaction} onClose={handleClose} title="Transaction Details" isLoading={isLoading}>
+            <Modal
+                isOpen={!!selectedTransaction}
+                onClose={handleClose}
+                title="Transaction Details"
+                isLoading={isLoading}
+            >
                 {selectedTransaction && (
                     <div className="space-y-4">
                         <div className="flex items-center space-x-2">
                             <Home className="h-5 w-5 text-blue-500" />
-                            <p className="font-semibold text-lg">{selectedTransaction.property.name}</p>
+                            <p className="font-semibold text-lg">
+                                {selectedTransaction.property.name}
+                            </p>
                         </div>
                         <div className="flex items-center space-x-2">
                             <MapPin className="h-5 w-5 text-red-500" />
@@ -167,7 +249,10 @@ export default function BuyerTransaction() {
                         </div>
                         <div className="flex items-center space-x-2">
                             <Coins className="h-5 w-5 text-green-500" />
-                            <p className="text-lg font-medium">eth {selectedTransaction.amount.toLocaleString()}</p>
+                            <p className="text-lg font-medium">
+                                eth{" "}
+                                {selectedTransaction.amount.toLocaleString()}
+                            </p>
                         </div>
                         <div className="flex items-center space-x-2">
                             <FileText className="h-5 w-5 text-purple-500" />
@@ -175,7 +260,10 @@ export default function BuyerTransaction() {
                         </div>
                         <div className="flex items-center space-x-2">
                             <FileText className="h-5 w-5 text-orange-500" />
-                            <p>Contract: {selectedTransaction.property.contractText}</p>
+                            <p>
+                                Contract:{" "}
+                                {selectedTransaction.property.contractText}
+                            </p>
                         </div>
                         <div className="flex items-center space-x-2">
                             {selectedTransaction.sellerAccept ? (
@@ -190,7 +278,10 @@ export default function BuyerTransaction() {
                             </p>
                         </div>
                         {selectedTransaction.sellerAccept && (
-                            <Button onClick={handleCreateTransaction} className="w-full mt-4">
+                            <Button
+                                onClick={handleCreateTransaction}
+                                className="w-full mt-4"
+                            >
                                 Confirm Transaction
                             </Button>
                         )}

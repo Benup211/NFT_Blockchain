@@ -60,6 +60,7 @@ interface SellTransactionState{
         success:boolean
         message:string
     }>
+    updateSellStatus:(transactionId:string,sellerId:string)=>Promise<{success:boolean,message:string}>
     isloading:boolean
 }
 
@@ -81,4 +82,23 @@ export const useSellTransactionStore = create<SellTransactionState>((set) => ({
             return { success: false, message: response?.data.errorMessage || "An error occurred" };
         }
     },
+    updateSellStatus: async (transactionId,sellerId) => {
+        set({ isloading: true });
+        try {
+            await axios.patch(
+                "http://localhost:3001/api/transaction/updateSellerStatus",
+                {
+                    transactionId,
+                    sellerId
+                },
+                { withCredentials: true }
+            );
+            set({ isloading: false });
+            return { success: true, message: "Sell Status updated successfully" };
+        } catch (err) {
+            const { response } = err as AxiosError<IErrorResponse>;
+            set({ isloading: false });
+            return { success: false, message: response?.data.errorMessage || "An error occurred" };
+        }
+    }
 }));

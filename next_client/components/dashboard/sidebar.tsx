@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, Home, Receipt, Settings } from 'lucide-react'
+import { LayoutDashboard, Home, Receipt, Settings,TrendingUpDown } from 'lucide-react'
 
 const menuItems = [
   { name: 'Dashboard Overview', icon: LayoutDashboard },
   { name: 'My Property', icon: Home },
   { name: 'Transaction', icon: Receipt },
+  { name:'Evaluate Property', icon:TrendingUpDown},
   { name: 'Settings', icon: Settings },
 ]
 

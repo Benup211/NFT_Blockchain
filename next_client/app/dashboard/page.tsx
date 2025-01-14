@@ -6,6 +6,7 @@ import DashboardOverview from '@/components/dashboard/dashboard-overview'
 import MyProperty from '@/components/dashboard/my-property'
 import Transaction from '@/components/dashboard/transaction'
 import Settings from '@/components/dashboard/settings'
+import Evaluate from '@/components/dashboard/evaluate'
 import { useAuthStore } from '@/state/auth-state'
 
 export default function Dashboard() {
@@ -25,6 +26,8 @@ export default function Dashboard() {
         return <MyProperty />
       case 'Transaction':
         return <Transaction />
+      case 'Evaluate Property':
+        return <Evaluate />
       case 'Settings':
         return <Settings />
       default:

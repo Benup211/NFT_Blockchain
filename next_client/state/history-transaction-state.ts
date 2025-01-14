@@ -54,59 +54,29 @@ interface Transaction {
     buyer: buyer;
 }
 
-interface BuyTransactionState {
+interface TransactionHistoryState {
     transactions: Transaction[];
-    getBuyerTransactions: () => Promise<{
-        success: boolean;
-        message: string;
-    }>;
-    finalTransactions: (
-        transactionId: string,
-        propertyId: string,
-        buyerId: string
-    ) => Promise<{
-        success: boolean;
-        message: string;
-    }>;
     isloading: boolean;
+    getTransactionHistory: () => Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }
 
-export const useBuyTransactionStore = create<BuyTransactionState>((set) => ({
+export const useTransactionHistoryStore = create<TransactionHistoryState>((set) => ({
     transactions: [],
     isloading: false,
-    getBuyerTransactions: async () => {
+
+    getTransactionHistory: async () => {
         set({ isloading: true });
         try {
-            const response = await axios.get(
-                "http://localhost:3001/api/transaction/getBuyerTransactions",
+            const response = await axios.get("http://localhost:3001/api/transaction/getTransactionsHistory",
                 { withCredentials: true }
             );
             set({ transactions: response.data, isloading: false });
-            return {
-                success: true,
-                message: "Buy Transactions fetched successfully",
-            };
-        } catch (err) {
-            const { response } = err as AxiosError<IErrorResponse>;
-            set({ isloading: false });
-            return {
-                success: false,
-                message: response?.data.errorMessage || "An error occurred",
-            };
-        }
-    },
-    finalTransactions: async (transactionId, propertyId, buyerId) => {
-        set({ isloading: true });
-        try {
-            const response = await axios.patch(
-                "http://localhost:3001/api/transaction/finalTransaction",
-                { transactionId, propertyId, buyerId },
-                { withCredentials: true }
-            );
-            set({ isloading: false });
             return { success: true, message: response.data.message };
-        } catch (err) {
-            const { response } = err as AxiosError<IErrorResponse>;
+        } catch (error) {
+            const {response} = error as AxiosError<IErrorResponse>;
             set({ isloading: false });
             return {
                 success: false,
@@ -114,4 +84,5 @@ export const useBuyTransactionStore = create<BuyTransactionState>((set) => ({
             };
         }
     },
+
 }));
